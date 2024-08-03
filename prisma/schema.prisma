@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id              Int             @id @default(autoincrement())
+  name            String
+  category        ProductCategory
+  variant         Variant?
+  price           Float
+  printer_station Json 
+  order_items     OrderItem[]
+
+  @@map("product")
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  table_number String
+  total_price  Float
+  order_items  OrderItem[]
+
+  @@map("order")
+}
+
+model OrderItem {
+  id      Int   @id @default(autoincrement())
+  order   Order @relation(fields: [orderId], references: [id])
+  orderId Int
+
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId Int?
+
+  quantity Int
+
+  @@map("order_item")
+}
+
+enum ProductCategory {
+  MINUMAN
+  MAKANAN
+  PROMO
+}
+
+enum Variant {
+  DINGIN
+  PANAS
+  MANIS
+  TAWAR
+  GORENG
+  KUAH
+}
