@@ -13,7 +13,6 @@ export class OrderService implements IOrderService {
 
     async createOrder(orderData: OrderDto): Promise<{ order: Order; printers: string[] }> {
         return await this.db.$transaction(async (tx) => {
-            // Fetch all products and their prices for the given order items
             const orderItemsWithProduct = await tx.product.findMany({
                 where: {
                     id: {
@@ -22,9 +21,7 @@ export class OrderService implements IOrderService {
                 }
             });
     
-            // Create order items mapping with product details
             const mappingOrderItems = orderData.order_items.map((item) => {
-                const product = orderItemsWithProduct.find(p => p.id === item.productId);
                 return {
                     quantity: item.quantity,
                     Product: {
@@ -35,7 +32,6 @@ export class OrderService implements IOrderService {
                 };
             });
     
-            // Calculate total price
             const totalPrice = orderData.order_items.reduce((sum, item) => {
                 const product = orderItemsWithProduct.find(p => p.id === item.productId);
                 if (product) {
@@ -44,7 +40,6 @@ export class OrderService implements IOrderService {
                 return sum;
             }, 0);
     
-            // Create the order
             const order = await tx.order.create({
                 data: {
                     table_number: orderData.table_number,
@@ -62,7 +57,6 @@ export class OrderService implements IOrderService {
                 }
             });
     
-            // Determine printers needed
             const printers = new Set<string>();
             printers.add('A'); // Default printer for cashier
     
